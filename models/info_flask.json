@@ -1,5 +1,5 @@
 {
-    "nombre_dataset": "dataset_clean.csv",
+    "nombre_dataset": "car_price_clean.csv",
     "total_filas": 2500,
     "total_columnas": 10,
     "columnas_numericas": [

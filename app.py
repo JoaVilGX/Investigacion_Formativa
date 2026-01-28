@@ -14,7 +14,7 @@ app.secret_key = 'clave_secreta_para_sesiones'  # Cambia esto
 
 # Cargar datos y modelo al iniciar
 print("🔄 Cargando dataset y modelo...")
-df = cargar_datos('data/dataset_limpio.csv')
+df = cargar_datos('data/car_price_cleaned.csv')
 modelo = cargar_modelo('models/modelo_entrenado.pkl')
 escalador = cargar_escalador('models/scaler.pkl')
 

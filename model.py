@@ -69,3 +69,16 @@ def obtener_metricas(y_true, y_pred):
         'recall': recall_score(y_true, y_pred, average='weighted'),
         'f1': f1_score(y_true, y_pred, average='weighted')
     }
+
+def cargar_escalador(ruta='models/scaler.pkl'):
+    """Carga el escalador entrenado desde un archivo .pkl"""
+    try:
+        escalador = joblib.load(ruta)
+        print(f"✅ Escalador cargado desde {ruta}")
+        return escalador
+    except FileNotFoundError:
+        print(f"❌ Error: No se encontró el archivo {ruta}")
+        return None
+    except Exception as e:
+        print(f"❌ Error al cargar escalador: {str(e)}")
+        return None

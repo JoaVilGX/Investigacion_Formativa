@@ -16,21 +16,9 @@
         "Condition",
         "Model"
     ],
-    "variable_objetivo": "condition",
+    "variable_objetivo": "Condition",
     "modelo_utilizado": "Regresi\u00f3n Log\u00edstica",
     "accuracy": 0.34444444444444444,
-    "ejemplo_fila": {
-        "Car ID": 1.0,
-        "Brand": "Tesla",
-        "Year": 2016.0,
-        "Engine Size": 2.3,
-        "Fuel Type": "Petrol",
-        "Transmission": "Manual",
-        "Mileage": 114832.0,
-        "Condition": "New",
-        "Price": 26613.92,
-        "Model": "Model X"
-    },
     "features_para_modelo": [
         "Year",
         "Engine Size",

@@ -1,9 +1,70 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-    <title>Predictor de Dataset</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Predictor ML - {{ dataset_info.nombre_dataset|default('Dataset') }}</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .seccion { border: 1px solid #ddd; padding: 20px; margin: 10px 0; border-radius: 5px; }
+        .grafica { width: 100%; height: 400px; margin: 20px 0; }
+        button { background: #007bff; color: white; border: none; padding: 10px 15px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        input, select { padding: 5px; margin: 5px; }
+        .resultado { background: #f8f9fa; padding: 10px; margin: 10px 0; }
+    </style>
 </head>
 <body>
-    <h1>¡Hola! La app Flask está funcionando.</h1>
+    <h1>🔮 Predictor de {{ target_col }}</h1>
+    
+    <!-- Sección 1: Información del dataset -->
+    <div class="seccion">
+        <h2>📊 Dataset: {{ dataset_info.nombre|default('Sin nombre') }}</h2>
+        <p>Filas: {{ dataset_info.filas }}, Columnas: {{ dataset_info.columnas }}</p>
+        <div id="info-dataset"></div>
+    </div>
+    
+    <!-- Sección 2: Configuración de muestra -->
+    <div class="seccion">
+        <h2>⚙️ Configurar Muestra</h2>
+        <label>Semilla aleatoria: <input type="number" id="semilla" value="42"></label>
+        <label>Porcentaje a usar: 
+            <select id="porcentaje">
+                <option value="1.0">100%</option>
+                <option value="0.5">50%</option>
+                <option value="0.2">20%</option>
+            </select>
+        </label>
+        <label>División entrenamiento/prueba: 
+            <select id="split">
+                <option value="0.8">80/20</option>
+                <option value="0.7">70/30</option>
+            </select>
+        </label>
+        <button onclick="configurar()">Aplicar Configuración</button>
+        <div id="mensaje-config" class="resultado"></div>
+    </div>
+    
+    <!-- Sección 3: Evaluación y gráficas -->
+    <div class="seccion">
+        <h2>📈 Evaluar Modelo</h2>
+        <button onclick="evaluar()">Generar Gráficas y Métricas</button>
+        <div id="metricas" class="resultado"></div>
+        <div id="grafica-matriz" class="grafica"></div>
+        <div id="grafica-dist" class="grafica"></div>
+        <div id="grafica-imp" class="grafica"></div>
+    </div>
+    
+    <!-- Sección 4: Predicción manual -->
+    <div class="seccion">
+        <h2>🔍 Realizar Predicción</h2>
+        <div id="formulario-prediccion">
+            <!-- Los campos se generarán automáticamente con JavaScript -->
+        </div>
+        <div id="resultado-prediccion" class="resultado"></div>
+    </div>
+    
+    <script src="/static/js/app.js"></script>
 </body>
 </html>

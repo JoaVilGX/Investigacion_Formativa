@@ -20,7 +20,7 @@
     
     <!-- Sección 1: Información del dataset -->
     <div class="seccion">
-        <h2>📊 Dataset: {{ dataset_info.nombre|default('Sin nombre') }}</h2>
+        <h2>📊 Dataset: {{ dataset_info.nombre|default('car_price_clean.csv') }}</h2>
         <p>Filas: {{ dataset_info.filas }}, Columnas: {{ dataset_info.columnas }}</p>
         <div id="info-dataset"></div>
     </div>
@@ -32,8 +32,17 @@
         <label>Porcentaje a usar: 
             <select id="porcentaje">
                 <option value="1.0">100%</option>
+                <option value="0.95">95%</option>
+                <option value="0.9">90%</option>
+                <option value="0.8">80%</option>
+                <option value="0.7">70%</option>
+                <option value="0.6">60%</option>
                 <option value="0.5">50%</option>
+                <option value="0.4">40%</option>
+                <option value="0.3">30%</option>
                 <option value="0.2">20%</option>
+                <option value="0.1">10%</option>
+                <option value="0.05">5%</option>
             </select>
         </label>
         <label>División entrenamiento/prueba: 
@@ -56,14 +65,109 @@
         <div id="grafica-imp" class="grafica"></div>
     </div>
     
-    <!-- Sección 4: Predicción manual -->
+    <!-- Sección 4: Predicción Manual -->
     <div class="seccion">
-        <h2>🔍 Realizar Predicción</h2>
-        <div id="formulario-prediccion">
-            <!-- Los campos se generarán automáticamente con JavaScript -->
-        </div>
+        <h2>🔍 Realizar Predicción Manual</h2>
+        
+        <form id="form-prediccion">
+            <!-- Campos numéricos -->
+            <div>
+                <label>Año (Year): <input type="number" id="Year" value="2020" min="2000" max="2023"></label>
+            </div>
+            
+            <div>
+                <label>Tamaño Motor (Engine Size): <input type="number" id="Engine_Size" value="2.0" step="0.1" min="1.0" max="5.0"></label>
+            </div>
+            
+            <div>
+                <label>Kilometraje (Mileage): <input type="number" id="Mileage" value="50000" min="0" max="200000"></label>
+            </div>
+            
+            <!-- Brand -->
+            <div>
+                <label>Marca (Brand): 
+                    <select id="Brand">
+                        <option value="Toyota">Toyota</option>
+                        <option value="Honda">Honda</option>
+                        <option value="Ford">Ford</option>
+                        <option value="BMW">BMW</option>
+                        <option value="Mercedes">Mercedes</option>
+                        <option value="Tesla">Tesla</option>
+                    </select>
+                </label>
+            </div>
+            
+            <!-- Fuel Type -->
+            <div>
+                <label>Tipo Combustible (Fuel Type): 
+                    <select id="Fuel_Type">
+                        <option value="Petrol">Petrol</option>
+                        <option value="Diesel">Diesel</option>
+                        <option value="Electric">Electric</option>
+                        <option value="Hybrid">Hybrid</option>
+                    </select>
+                </label>
+            </div>
+            
+            <!-- Transmission -->
+            <div>
+                <label>Transmisión (Transmission): 
+                    <select id="Transmission">
+                        <option value="Automatic">Automatic</option>
+                        <option value="Manual">Manual</option>
+                    </select>
+                </label>
+            </div>
+            
+            <button type="button" onclick="realizarPrediccion()">🔮 Predecir Condición</button>
+        </form>
+        
         <div id="resultado-prediccion" class="resultado"></div>
     </div>
+
+    <script>
+    async function realizarPrediccion() {
+        try {
+            // Recoger datos del formulario
+            const datos = {
+                "Year": parseFloat(document.getElementById('Year').value),
+                "Engine Size": parseFloat(document.getElementById('Engine_Size').value),
+                "Mileage": parseFloat(document.getElementById('Mileage').value),
+                "Brand": document.getElementById('Brand').value,
+                "Fuel Type": document.getElementById('Fuel_Type').value,
+                "Transmission": document.getElementById('Transmission').value
+            };
+            
+            const response = await fetch('/predecir_manual', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(datos)
+            });
+            
+            const resultado = await response.json();
+            const divResultado = document.getElementById('resultado-prediccion');
+            
+            if (resultado.success) {
+                divResultado.innerHTML = `
+                    <h3>✅ Resultado de la Predicción</h3>
+                    <p><strong>Condición predicha:</strong> ${resultado.prediccion}</p>
+                    <p><strong>Confianza:</strong> ${(resultado.confianza * 100).toFixed(1)}%</p>
+                    <p><strong>Probabilidades:</strong></p>
+                    <ul>
+                        <li>Nuevo (New): ${(resultado.probabilidades.New * 100).toFixed(1)}%</li>
+                        <li>Como Nuevo (Like New): ${(resultado.probabilidades['Like New'] * 100).toFixed(1)}%</li>
+                        <li>Usado (Used): ${(resultado.probabilidades.Used * 100).toFixed(1)}%</li>
+                    </ul>
+                `;
+            } else {
+                divResultado.innerHTML = `<p style="color: red;">❌ ${resultado.error}</p>`;
+            }
+        } catch (error) {
+            document.getElementById('resultado-prediccion').innerHTML = 
+                `<p style="color: red;">❌ Error: ${error.message}</p>`;
+        }
+    }
+    </script>
     
     <script src="/static/js/app.js"></script>
 </body>

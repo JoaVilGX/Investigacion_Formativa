@@ -1,24 +1,8 @@
 {
-    "nombre_dataset": "car_price_clean.csv",
-    "total_filas": 2500,
-    "total_columnas": 10,
-    "columnas_numericas": [
-        "Car ID",
-        "Year",
-        "Engine Size",
-        "Mileage",
-        "Price"
-    ],
-    "columnas_categoricas": [
-        "Brand",
-        "Fuel Type",
-        "Transmission",
-        "Condition",
-        "Model"
-    ],
+    "nombre_dataset": "car_price_cleaned.csv",
     "variable_objetivo": "Condition",
     "modelo_utilizado": "Regresi\u00f3n Log\u00edstica",
-    "accuracy": 0.34444444444444444,
+    "accuracy": 0.3377777777777778,
     "features_para_modelo": [
         "Year",
         "Engine Size",

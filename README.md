@@ -19,8 +19,6 @@ Un sistema predictivo web basado en Machine Learning para determinar la condici�
 - [Dataset](#dataset)
 - [Despliegue en GitHub Codespaces](#despliegue-en-github-codespaces)
 - [Problemas Conocidos](#problemas-conocidos)
-- [Contribución](#contribución)
-- [Licencia](#licencia)
 - [Autor](#autor)
 
 ## 📖 Descripción

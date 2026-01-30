@@ -155,10 +155,20 @@ function mostrarMetricas(metricas) {
 function mostrarImagen(elemento_id, imagen_base64, titulo = '') {
     const elemento = document.getElementById(elemento_id);
     if (elemento) {
-        elemento.innerHTML = `
-            <h4>${titulo}</h4>
-            <img src="${imagen_base64}" style="max-width: 100%; height: auto; border: 1px solid #ddd; padding: 10px; border-radius: 4px;">
-        `;
+        console.log(`🖼️ ${titulo}: Longitud de base64: ${imagen_base64 ? imagen_base64.length : 0}`);
+        
+        if (imagen_base64 && imagen_base64.length > 100) {
+            elemento.innerHTML = `
+                <h4>${titulo}</h4>
+                <img src="${imagen_base64}" style="max-width: 100%; height: auto; border: 1px solid #ddd; padding: 10px; border-radius: 4px;">
+                <p><small>Imagen cargada (${imagen_base64.length} caracteres)</small></p>
+            `;
+        } else {
+            elemento.innerHTML = `
+                <h4>${titulo}</h4>
+                <p style="color: red;">No se pudo cargar la gráfica. Base64 inválido o muy corto.</p>
+            `;
+        }
         elemento.style.display = 'block';
     }
 }

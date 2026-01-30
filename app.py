@@ -299,26 +299,37 @@ def evaluar():
         print("📊 Generando matriz de confusión...")
         matriz_conf = None
         try:
-            y_test_labels = pd.Series(global_y_test).map(
-                {2: 'New', 1: 'Like New', 0: 'Used'}
-            )
-            y_pred_labels = pd.Series(y_pred).map(
-                {2: 'New', 1: 'Like New', 0: 'Used'}
-            )
-
-            # Filtrar o reemplazar cualquier etiqueta que no sea una de las tres
-            etiquetas_validas = ['Used', 'Like New', 'New']
-            y_test_labels = y_test_labels.apply(lambda x: x if x in etiquetas_validas else 'Unknown')
-            y_pred_labels = y_pred_labels.apply(lambda x: x if x in etiquetas_validas else 'Unknown')
+            # Asegurar que las etiquetas sean strings
+            y_test_labels = pd.Series(global_y_test).astype(str)
+            y_pred_labels = pd.Series(y_pred).astype(str)
             
-            matriz_conf = crear_matriz_confusion(
-                y_test_labels, 
-                y_pred_labels,
-                labels=['Used', 'Like New', 'New']
-            )
-            print("✅ Matriz de confusión generada")
+            # Filtrar solo las etiquetas válidas
+            etiquetas_validas = ['Used', 'Like New', 'New', '0', '1', '2']
+            mask = y_test_labels.isin(etiquetas_validas) & y_pred_labels.isin(etiquetas_validas)
+            
+            if mask.any():
+                y_test_filtrado = y_test_labels[mask]
+                y_pred_filtrado = y_pred_labels[mask]
+                
+                # Si son números, convertirlos a strings legibles
+                if set(y_test_filtrado.unique()).issubset({'0', '1', '2'}):
+                    mapping = {'0': 'Used', '1': 'Like New', '2': 'New'}
+                    y_test_filtrado = y_test_filtrado.map(mapping)
+                    y_pred_filtrado = y_pred_filtrado.map(mapping)
+                
+                matriz_conf = crear_matriz_confusion(
+                    y_test_filtrado, 
+                    y_pred_filtrado,
+                    labels=['Used', 'Like New', 'New']
+                )
+                print(f"✅ Matriz de confusión generada con {len(y_test_filtrado)} muestras")
+            else:
+                print("⚠️  No hay muestras válidas para la matriz de confusión")
+                
         except Exception as e:
             print(f"⚠️  Error generando matriz de confusión: {e}")
+            import traceback
+            traceback.print_exc()
         
         # 4. GRÁFICA DE DISTRIBUCIÓN
         print("📈 Generando gráfica de distribución...")
@@ -335,23 +346,22 @@ def evaluar():
         except Exception as e:
             print(f"⚠️  Error generando gráfica de distribución: {e}")
         
-        # 5. GRÁFICA DE IMPORTANCIA DE CARACTERÍSTICAS
-        print("🎯 Generando gráfica de importancia...")
-        grafica_imp = None
-        try:
-            if hasattr(modelo, 'feature_importances_'):
-                grafica_imp = crear_grafica_importancia(modelo, features_modelo)
-                print("✅ Gráfica de importancia generada")
-        except Exception as e:
-            print(f"⚠️  Error generando gráfica de importancia: {e}")
-        
-        # 6. GRÁFICA DE RENDIMIENTO POR CLASE
+        # 5. GRÁFICA DE RENDIMIENTO POR CLASE
         print("📊 Generando gráfica de rendimiento por clase...")
-        grafica_clases = None
+        grafica_rendimiento = None
         try:
-            grafica_clases = crear_grafica_rendimiento_por_clase(
-                global_y_test, 
-                y_pred,
+            # Asegurar etiquetas como en la matriz de confusión
+            y_test_labels = pd.Series(global_y_test).astype(str)
+            y_pred_labels = pd.Series(y_pred).astype(str)
+            
+            if set(y_test_labels.unique()).issubset({'0', '1', '2'}):
+                mapping = {'0': 'Used', '1': 'Like New', '2': 'New'}
+                y_test_labels = y_test_labels.map(mapping)
+                y_pred_labels = y_pred_labels.map(mapping)
+            
+            grafica_rendimiento = crear_grafica_rendimiento_por_clase(
+                y_test_labels, 
+                y_pred_labels,
                 labels=['Used', 'Like New', 'New']
             )
             print("✅ Gráfica de rendimiento por clase generada")
@@ -365,8 +375,7 @@ def evaluar():
             'metricas': metricas,
             'matriz_confusion': matriz_conf,
             'grafica_distribucion': grafica_dist,
-            'grafica_importancia': grafica_imp,
-            'grafica_clases': grafica_clases,
+            'grafica_rendimiento': grafica_rendimiento,
             'resumen': {
                 'accuracy': round(metricas['accuracy'], 4),
                 'precision': round(metricas['precision'], 4),
@@ -384,6 +393,40 @@ def evaluar():
             'success': False,
             'error': f'❌ Error en evaluación: {str(e)}'
         }), 500
+
+@app.route('/test_image', methods=['GET'])
+def test_image():
+    """Endpoint de prueba para verificar que las imágenes se generan correctamente"""
+    try:
+        # Crear una imagen simple de prueba
+        import plotly.graph_objects as go
+        import plotly.io as pio
+        import base64
+        
+        fig = go.Figure(data=[go.Bar(y=[1, 3, 2])])
+        fig.update_layout(title='Gráfica de prueba', width=400, height=300)
+        
+        img_bytes = pio.to_image(fig, format='png', width=400, height=300)
+        img_base64 = base64.b64encode(img_bytes).decode('utf-8')
+        
+        # Devolver como HTML para probar
+        html = f"""
+        <html>
+        <body>
+            <h1>Test de Imagen Base64</h1>
+            <p>Longitud: {len(img_base64)} caracteres</p>
+            <p>Primeros 100 chars: {img_base64[:100]}...</p>
+            <h2>Imagen renderizada:</h2>
+            <img src="data:image/png;base64,{img_base64}" style="border: 1px solid black;">
+            <h2>En JSON:</h2>
+            <textarea rows="10" cols="80">{json.dumps({'test': f'data:image/png;base64,{img_base64}'})}</textarea>
+        </body>
+        </html>
+        """
+        
+        return html
+    except Exception as e:
+        return f"Error: {str(e)}"
 
 @app.route('/predecir_manual', methods=['POST'])
 def predecir_manual():

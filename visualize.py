@@ -2,9 +2,123 @@ import plotly.express as px
 import plotly.graph_objects as go
 import plotly
 import json
+import plotly.io as pio
+import base64
 import pandas as pd
 import numpy as np
 from sklearn.metrics import confusion_matrix
+from io import BytesIO
+
+def crear_matriz_confusion(y_true, y_pred, labels):
+    """Crea una matriz de confusión y devuelve imagen base64"""
+    from sklearn.metrics import confusion_matrix
+    
+    try:
+        # Crear matriz de confusión
+        cm = confusion_matrix(y_true, y_pred, labels=labels)
+        
+        # Crear figura
+        fig = px.imshow(cm, 
+                        text_auto=True,
+                        labels=dict(x="Predicho", y="Real", color="Cantidad"),
+                        x=labels, 
+                        y=labels,
+                        title="Matriz de Confusión",
+                        color_continuous_scale='Blues')
+        
+        fig.update_layout(width=600, height=500)
+        
+        # Convertir a imagen base64
+        img_bytes = pio.to_image(fig, format='png', width=600, height=500)
+        img_base64 = base64.b64encode(img_bytes).decode('utf-8')
+        
+        return f"data:image/png;base64,{img_base64}"
+        
+    except Exception as e:
+        print(f"❌ Error creando matriz de confusión: {e}")
+        return None
+
+def crear_grafica_distribucion(df, columna, target_col=None):
+    """Crea un histograma y devuelve imagen base64"""
+    try:
+        if columna not in df.columns:
+            print(f"⚠️  Columna {columna} no encontrada")
+            return None
+        
+        if target_col and target_col in df.columns:
+            fig = px.histogram(df.dropna(subset=[target_col]), 
+                              x=columna, 
+                              color=target_col, 
+                              barmode='group',
+                              title=f"Distribución de {columna} por {target_col}")
+        else:
+            fig = px.histogram(df, x=columna, title=f"Distribución de {columna}")
+        
+        fig.update_layout(width=800, height=500)
+        
+        # Convertir a imagen base64
+        img_bytes = pio.to_image(fig, format='png', width=800, height=500)
+        img_base64 = base64.b64encode(img_bytes).decode('utf-8')
+        
+        return f"data:image/png;base64,{img_base64}"
+        
+    except Exception as e:
+        print(f"❌ Error creando gráfica de distribución: {e}")
+        return None
+
+def crear_grafica_rendimiento_por_clase(y_true, y_pred, labels):
+    """Crea gráfica de rendimiento por clase y devuelve imagen base64"""
+    try:
+        from sklearn.metrics import precision_recall_fscore_support
+        
+        precision, recall, f1, _ = precision_recall_fscore_support(
+            y_true, y_pred, labels=labels, average=None
+        )
+        
+        fig = go.Figure()
+        
+        fig.add_trace(go.Bar(
+            name='Precisión',
+            x=labels,
+            y=precision,
+            text=[f'{p:.3f}' for p in precision],
+            textposition='auto'
+        ))
+        
+        fig.add_trace(go.Bar(
+            name='Recall',
+            x=labels,
+            y=recall,
+            text=[f'{r:.3f}' for r in recall],
+            textposition='auto'
+        ))
+        
+        fig.add_trace(go.Bar(
+            name='F1-Score',
+            x=labels,
+            y=f1,
+            text=[f'{f:.3f}' for f in f1],
+            textposition='auto'
+        ))
+        
+        fig.update_layout(
+            title="Rendimiento por Clase",
+            xaxis_title="Clase",
+            yaxis_title="Valor",
+            barmode='group',
+            width=800,
+            height=500
+        )
+        
+        # Convertir a imagen base64
+        img_bytes = pio.to_image(fig, format='png', width=800, height=500)
+        img_base64 = base64.b64encode(img_bytes).decode('utf-8')
+        
+        return f"data:image/png;base64,{img_base64}"
+        
+    except Exception as e:
+        print(f"❌ Error creando gráfica de rendimiento: {e}")
+        return None
 
 def crear_grafica_metricas_comparacion(metricas_dict):
     """Crea gráfico de barras para comparar métricas"""

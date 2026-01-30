@@ -323,12 +323,15 @@ El archivo `devcontainer/devcontainer.json` configura:
 - Mejorar interfaz de usuario
 
 
-## 👨‍💻 Autor
+## 👨‍💻 Autores
 
 **Nombre**: Joaquin Villacreses Moreno
 - GitHub: [@JoaVilGX](https://github.com/JoaVilGX)
+
+
 - Proyecto: Investigacion_Formativa / Car Price Condition Predictor
-- Curso: [Nombre del Curso/Universidad]
+- Curso: Segundo Semestre "C"
+- Universidad: Universidad Nacional de Chimborazo
 
 ---
 

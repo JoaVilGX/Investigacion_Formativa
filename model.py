@@ -8,6 +8,7 @@ def entrenar_y_guardar_modelo_completo(ruta_datos='data/car_price_cleaned.csv',
                                      ruta_scaler='models/scaler.pkl',
                                      ruta_info='models/info_flask.json'):
     """
+    
     Entrena un modelo completo desde cero y guarda todo lo necesario.
     
     Returns:
@@ -84,7 +85,8 @@ def entrenar_y_guardar_modelo_completo(ruta_datos='data/car_price_cleaned.csv',
         condition_map = {'New': 'New', 'Like New': 'Like New', 'Used': 'Used'}
         df_procesado['Condition_encoded'] = df_clean['Condition'].map(condition_map)
         
-        # 4. VERIFICAR que no hay duplicados
+        # 4. Verificamos que no existan columnas duplicadas
+        # Comprobamos la integridad de las columnas
         columnas = df_procesado.columns.tolist()
         if len(columnas) != len(set(columnas)):
             print("❌ ¡HAY COLUMNAS DUPLICADAS!")

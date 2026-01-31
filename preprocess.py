@@ -10,26 +10,26 @@ def cargar_datos(ruta='data/car_price_cleaned.csv'):
 
 def limpiar_datos(df):
     """Realiza limpieza completa del dataset"""
-    # Crear copia
+    # Creamos copia
     df_clean = df.copy()
     
-    # Eliminar filas completamente vacías
+    # Eliminamos filas completamente vacías
     df_clean = df_clean.dropna(how='all')
     
-    # Eliminar filas sin identificador
+    # Eliminamos filas sin identificador
     df_clean = df_clean.dropna(subset=['Car ID'])
     
-    # Convertir Car ID a entero
+    # Convertimos Car ID a entero
     df_clean['Car ID'] = df_clean['Car ID'].astype(int)
     
-    # Imputación de valores faltantes numéricos
+    # Imputamos los valores faltantes numéricos
     numeric_cols = ['Year', 'Engine Size', 'Mileage', 'Price']
     for col in numeric_cols:
         if col in df_clean.columns and df_clean[col].isnull().sum() > 0:
             median_val = df_clean[col].median()
             df_clean[col].fillna(median_val, inplace=True)
     
-    # Imputación de valores faltantes categóricos
+    # Imputamos los valores faltantes categóricos
     categorical_cols = ['Brand', 'Fuel Type', 'Transmission', 'Condition', 'Model']
     for col in categorical_cols:
         if col in df_clean.columns and df_clean[col].isnull().sum() > 0:
@@ -40,7 +40,7 @@ def limpiar_datos(df):
 
 def transformar_categoricas(df_clean):
     """Transforma y codifica variables categóricas"""
-    # Codificación de variables ordinales
+    # Codificamos las variables ordinales
     condition_mapping = {'New': 2, 'Like New': 1, 'Used': 0}
     df_clean['Condition_encoded'] = df_clean['Condition'].map(condition_mapping)
     
@@ -63,7 +63,7 @@ def estandarizar_numericas(df_clean):
     """Estandariza variables numéricas"""
     numeric_to_scale = ['Year', 'Engine Size', 'Mileage']
     
-    # Estandarización manual (Z-score)
+    # Estandarizamos el manual (Z-score)
     scalers = {}
     for col in numeric_to_scale:
         if col in df_clean.columns:
@@ -72,7 +72,7 @@ def estandarizar_numericas(df_clean):
             df_clean[f'{col}_standardized'] = (df_clean[col] - mean_val) / std_val
             scalers[col] = {'mean': mean_val, 'std': std_val}
     
-    # Normalización Min-Max para Price
+    # Normalizamos Min-Max para Price
     if 'Price' in df_clean.columns:
         min_price = df_clean['Price'].min()
         max_price = df_clean['Price'].max()
@@ -108,17 +108,17 @@ def preparar_datos_completos(ruta='data/car_price_cleaned.csv'):
     """
     print("🔄 Preparando datos completos...")
     
-    # 1. Cargar y limpiar
+    # 1. Cargamos y limpiamos
     df = cargar_datos(ruta)
     df_clean = limpiar_datos(df)
     
-    # 2. Transformar categóricas
+    # 2. Transformamos las categóricas
     df_clean, condition_mapping, brand_mapping = transformar_categoricas(df_clean)
     
-    # 3. Estandarizar numéricas
+    # 3. Estandarizamos las numéricas
     df_clean, scalers = estandarizar_numericas(df_clean)
     
-    # 4. Codificar variable objetivo
+    # 4. Codificamos el variable objetivo
     condition_map = {'New': 2, 'Like New': 1, 'Used': 0}
     df_clean['Condition_encoded'] = df_clean['Condition'].map(condition_map)
     
@@ -131,7 +131,7 @@ def preparar_datos_para_modelo(ruta='data/car_price_cleaned.csv', ruta_json='mod
     """
     print("🔄 Preparando datos para el modelo Flask...")
     
-    # 1. Cargar configuración del modelo
+    # 1. Cargamos la configuración del modelo
     try:
         with open(ruta_json, 'r') as f:
             info = json.load(f)
@@ -142,14 +142,14 @@ def preparar_datos_para_modelo(ruta='data/car_price_cleaned.csv', ruta_json='mod
         print(f"❌ Error cargando configuración: {e}")
         return None, None, [], {}
     
-    # 2. Cargar y limpiar datos
+    # 2. Cargamos y limpiamos datos
     df = cargar_datos(ruta)
     df_clean = limpiar_datos(df)
     
-    # 3. Crear un DataFrame vacío para las características finales
+    # 3. Creamos un DataFrame vacío para las características finales
     df_final = pd.DataFrame(index=df_clean.index)
     
-    # 4. Añadir columnas originales necesarias
+    # 4. Añadimos columnas originales necesarias
     df_final['Year'] = df_clean['Year']
     df_final['Engine Size'] = df_clean['Engine Size']
     df_final['Mileage'] = df_clean['Mileage']
@@ -158,8 +158,8 @@ def preparar_datos_para_modelo(ruta='data/car_price_cleaned.csv', ruta_json='mod
     df_final['Transmission'] = df_clean['Transmission']
     df_final['Condition'] = df_clean['Condition']
     
-    # 5. Crear las 13 características EXACTAS en el orden correcto
-    # Codificación de Brand
+    # 5. Creamos las 13 características EXACTAS en el orden correcto
+    # Codificamos Brand
     unique_brands = sorted(df_final['Brand'].unique())
     brand_mapping = {brand: idx for idx, brand in enumerate(unique_brands)}
     df_final['Brand_encoded'] = df_final['Brand'].map(brand_mapping)
@@ -182,22 +182,22 @@ def preparar_datos_para_modelo(ruta='data/car_price_cleaned.csv', ruta_json='mod
         df_final[f'{col}_standardized'] = (df_final[col] - mean_val) / std_val if std_val != 0 else 0
         scalers[col] = {'mean': mean_val, 'std': std_val}
     
-    # 6. Codificar variable objetivo
+    # 6. Codificamos la variable objetivo
     condition_map = {'New': 2, 'Like New': 1, 'Used': 0}
     df_final['Condition_encoded'] = df_final['Condition'].map(condition_map)
     
-    # 7. VERIFICAR que tenemos todas las características requeridas
+    # 7. Verificamos que tenemos todas las características requeridas
     missing = [f for f in features_requeridas if f not in df_final.columns]
     if missing:
         print(f"❌ Características faltantes: {missing}")
         for f in missing:
             df_final[f] = 0  # Crear con valor 0
     
-    # 8. Seleccionar SOLO las 13 características + objetivo, en el orden correcto
+    # 8. Seleccionamos las 13 características + objetivo, en el orden correcto
     columnas_finales = [col for col in features_requeridas if col in df_final.columns]
     columnas_finales.append('Condition_encoded')
     
-    # Eliminar posibles duplicados
+    # Eliminamos los posibles duplicados
     columnas_finales = list(dict.fromkeys(columnas_finales))
     
     df_resultado = df_final[columnas_finales].copy()
@@ -245,7 +245,7 @@ def asegurar_caracteristicas(df, features_requeridas):
             elif feature.endswith('_standardized'):
                 base_col = feature.replace('_standardized', '')
                 if base_col in df.columns:
-                    # Calcular estandarización
+                    # Calculamos la estandarización
                     mean_val = df[base_col].mean()
                     std_val = df[base_col].std()
                     df[feature] = (df[base_col] - mean_val) / std_val if std_val != 0 else 0
@@ -274,22 +274,22 @@ def preparar_datos_para_modelo_sin_duplicados(ruta='data/car_price_cleaned.csv')
     """
     print("🔄 Preparando datos para el modelo (versión simplificada)...")
     
-    # 1. Cargar y limpiar datos
+    # 1. Cargamos y limpiamos datos
     df = cargar_datos(ruta)
     df_clean = limpiar_datos(df)
     
-    # 2. Crear DataFrame con columnas básicas
+    # 2. Creamos DataFrame con columnas básicas
     columnas_base = ['Year', 'Engine Size', 'Mileage', 'Brand', 'Fuel Type', 'Transmission', 'Condition']
     df_base = df_clean[columnas_base].copy()
     
-    # 3. Crear las 13 características manualmente
+    # 3. Creamps las 13 características manualmente
     df_final = pd.DataFrame(index=df_base.index)
     
     # Variables numéricas
     for col in ['Year', 'Engine Size', 'Mileage']:
         df_final[col] = df_base[col].astype(float)
     
-    # Codificar Brand
+    # Codificamos Brand
     unique_brands = sorted(df_base['Brand'].dropna().unique())
     brand_mapping = {brand: idx for idx, brand in enumerate(unique_brands)}
     df_final['Brand_encoded'] = df_base['Brand'].map(brand_mapping).fillna(0).astype(int)
@@ -310,10 +310,10 @@ def preparar_datos_para_modelo_sin_duplicados(ruta='data/car_price_cleaned.csv')
         df_final[f'{col}_standardized'] = (df_final[col] - mean_val) / (std_val if std_val != 0 else 1)
         scalers[col] = {'mean': mean_val, 'std': std_val}
     
-    # Variable objetivo (usar strings directamente)
+    # La variable objetivo (usar strings directamente)
     df_final['Condition_encoded'] = df_base['Condition']
     
-    # Verificar que tenemos 13 características + 1 objetivo
+    # Verificamos que tenemos 13 características + 1 objetivo
     print(f"✅ Datos preparados: {df_final.shape}")
     print(f"   Columnas: {df_final.columns.tolist()}")
     

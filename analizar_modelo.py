@@ -10,7 +10,7 @@ if hasattr(modelo, 'feature_names_in_'):
     features = list(modelo.feature_names_in_)
     print(f"📊 El modelo tiene {len(features)} características:")
     
-    # Se cuenta las ocurrencias
+    # Contamos las ocurrencias
     from collections import Counter
     contador = Counter(features)
     

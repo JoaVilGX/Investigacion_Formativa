@@ -27,13 +27,13 @@ def entrenar_y_guardar_modelo_completo(ruta_datos='data/car_price_cleaned.csv',
         import pandas as pd
         import numpy as np
         
-        # 1. Cargar datos y  limpiar datos 
+        # 1. Cargamos datos y  limpiamos datos 
         df = cargar_datos(ruta_datos)
         df_clean = limpiar_datos(df)
         
         print(f"📊 Dataset original: {df_clean.shape}")
         
-        # 2. Definir características y variable del objetivo
+        # 2. Definimos características y variable del objetivo
         target_col = 'Condition'
         
         #3. Definimos las características utilizadas por el modelo (las 13 que necesitamos)
@@ -190,12 +190,12 @@ def predecir_con_preprocesamiento(modelo, X, scalers=None, features_requeridas=N
         
         # Si X es un DataFrame, verificar sus columnas
         if hasattr(X, 'columns'):
-            # Eliminar columnas duplicadas
+            # Eliminamos columnas duplicadas
             X = X.loc[:, ~X.columns.duplicated()]
             print(f"   Columnas recibidas (sin duplicados): {list(X.columns)}")
         
         # Determinamos las características que el modelo espera
-        # Si el modelo tiene feature_names_in_, usarlas (son las usadas en el entrenamiento)
+        # Si el modelo tiene feature_names_in_, utilizamos (son las usadas en el entrenamiento)
         if hasattr(modelo, 'feature_names_in_'):
             features_esperadas = modelo.feature_names_in_
             print(f"   Características esperadas por el modelo: {features_esperadas}")
@@ -203,7 +203,7 @@ def predecir_con_preprocesamiento(modelo, X, scalers=None, features_requeridas=N
             features_esperadas = features_requeridas
             print(f"   Características esperadas (de la lista): {features_esperadas}")
         else:
-            # Si no hay información, usar las columnas de X (asumiendo que ya están bien)
+            # Si no hay información, usamos las columnas de X (asumiendo que ya están bien)
             features_esperadas = list(X.columns) if hasattr(X, 'columns') else None
             print(f"   Características esperadas (de los datos): {features_esperadas}")
         
@@ -260,7 +260,7 @@ def predecir(modelo, X, escalador=None):
         Predicciones (array)
     """
     try:
-        # Si hay escalador, escalar los datos
+        # Si hay escalador, escalamos los datos
         if escalador is not None:
             X_scaled = escalador.transform(X)
         else:
@@ -293,7 +293,7 @@ def obtener_probabilidades(modelo, X, escalador=None):
         else:
             X_scaled = X
             
-        # Obtener probabilidades si el modelo las soporta
+        # Obtenemos probabilidades si el modelo las soporta
         if hasattr(modelo, 'predict_proba'):
             probabilidades = modelo.predict_proba(X_scaled)
             return probabilidades
@@ -357,7 +357,7 @@ def entrenar_modelo(X, y, test_size=0.2, random_state=42):
     acc_rf = accuracy_score(y_test, y_pred_rf)
     acc_lr = accuracy_score(y_test, y_pred_lr)
     
-    # Elegir mejor modelo
+    # Elegimos el mejor modelo
     if acc_rf > acc_lr:
         best_model = rf_model
         best_name = 'RandomForest'
@@ -367,7 +367,7 @@ def entrenar_modelo(X, y, test_size=0.2, random_state=42):
         best_name = 'LogisticRegression'
         best_acc = acc_lr
     
-    # Guardar ambos modelos
+    # Guardamos ambos modelos
     modelo_completo = {
         'rf_model': rf_model,
         'logreg_model': lr_model,

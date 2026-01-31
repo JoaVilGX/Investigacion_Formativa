@@ -14,10 +14,10 @@ def crear_matriz_confusion(y_true, y_pred, labels):
     from sklearn.metrics import confusion_matrix
     
     try:
-        # Crear matriz de confusión
+        # Creamos matriz de confusión
         cm = confusion_matrix(y_true, y_pred, labels=labels)
         
-        # Crear figura
+        # Creamos la figura
         fig = px.imshow(cm, 
                         text_auto=True,
                         labels=dict(x="Predicho", y="Real", color="Cantidad"),
@@ -28,7 +28,7 @@ def crear_matriz_confusion(y_true, y_pred, labels):
         
         fig.update_layout(width=600, height=500)
         
-        # Convertir a imagen base64
+        # Convertimos a imagen base64
         img_bytes = pio.to_image(fig, format='png', width=600, height=500)
         img_base64 = base64.b64encode(img_bytes).decode('utf-8')
         
@@ -56,7 +56,7 @@ def crear_grafica_distribucion(df, columna, target_col=None):
         
         fig.update_layout(width=800, height=500)
         
-        # Convertir a imagen base64
+        # Convertimos a imagen base64
         img_bytes = pio.to_image(fig, format='png', width=800, height=500)
         img_base64 = base64.b64encode(img_bytes).decode('utf-8')
         
@@ -110,7 +110,7 @@ def crear_grafica_rendimiento_por_clase(y_true, y_pred, labels):
             height=500
         )
         
-        # Convertir a imagen base64
+        # Convertimos a imagen base64
         img_bytes = pio.to_image(fig, format='png', width=800, height=500)
         img_base64 = base64.b64encode(img_bytes).decode('utf-8')
         
@@ -188,14 +188,14 @@ def crear_grafica_rendimiento_por_clase(y_true, y_pred, labels):
 def crear_grafica_distribucion(df, columna, target_col=None):
     """Crea un histograma o gráfico de barras"""
     try:
-        # Verificar que la columna exista en el DataFrame
+        # Verificamos que la columna exista en el DataFrame
         if columna not in df.columns:
             print(f"⚠️  Columna {columna} no encontrada en el DataFrame")
             return None
         
         # Si se proporciona target_col, verificar que exista
         if target_col and target_col in df.columns:
-            # Filtrar filas donde target_col no sea nulo
+            # Filtramos filas donde target_col no sea nulo
             df_filtrado = df.dropna(subset=[target_col])
             if len(df_filtrado) == 0:
                 print(f"⚠️  No hay datos válidos para {target_col}")
@@ -212,18 +212,18 @@ def crear_grafica_distribucion(df, columna, target_col=None):
 
 def crear_matriz_confusion(y_true, y_pred, labels):
     """Crea una matriz de confusión interactiva"""
-    # Convertir a arrays de numpy
+    # Convertimos a arrays de numpy
     y_true = np.array(y_true)
     y_pred = np.array(y_pred)
     
-    # Filtrar solo las etiquetas que están en la lista de labels
+    # Filtramos solo las etiquetas que están en la lista de labels
     mask = np.isin(y_true, labels) & np.isin(y_pred, labels)
     y_true_filtrado = y_true[mask]
     y_pred_filtrado = y_pred[mask]
     
     if len(y_true_filtrado) == 0:
         print("⚠️  No hay datos válidos para la matriz de confusión")
-        # Crear una matriz de ceros
+        # Creamos una matriz de ceros
         cm = np.zeros((len(labels), len(labels)), dtype=int)
     else:
         cm = confusion_matrix(y_true_filtrado, y_pred_filtrado, labels=labels)

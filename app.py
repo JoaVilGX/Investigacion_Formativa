@@ -13,7 +13,7 @@ from sklearn.model_selection import train_test_split
 
 sys.path.append('.')
 
-# Importamps módulos propios
+# Importamos módulos propios
 try:
     from preprocess import (
         cargar_datos, 
@@ -139,7 +139,7 @@ global_X_test = None
 global_y_train = None
 global_y_test = None
 
-escalador = None  # Placeholder si se necesita
+escalador = None  # Placeholder en caso de necesitar
 
 print("="*60)
 print("✅ INICIALIZACIÓN COMPLETADA")
@@ -195,7 +195,7 @@ def configurar():
         
         print(f"⚙️ Configurando: semilla={semilla}, porcentaje={porcentaje}, split={split}")
         
-        # 1. Tomar muestra del dataset preprocesado
+        # 1. Tomamos muestra del dataset preprocesado
         if porcentaje < 1.0:
             df_muestra = df_preprocesado.sample(frac=porcentaje, random_state=semilla)
         else:
@@ -282,7 +282,7 @@ def evaluar():
         
         print(f"✅ {len(y_pred)} predicciones realizadas")
         
-        # 2. SE CALCULAR LAS MÉTRICAS
+        # 2. CALCULAMOS LAS MÉTRICAS
         print("📈 Calculando métricas...")
         metricas = obtener_metricas(global_y_test, y_pred)
         
@@ -330,7 +330,7 @@ def evaluar():
             import traceback
             traceback.print_exc()
         
-        # 4. GRAFICAMOS LA DISTRIBUCIÓN
+        # 4. GRAFICACIÓN DE LA DISTRIBUCIÓN
         print("📈 Generando gráfica de distribución...")
         grafica_dist = None
         try:
@@ -349,7 +349,7 @@ def evaluar():
         print("📊 Generando gráfica de rendimiento por clase...")
         grafica_rendimiento = None
         try:
-            # Aseguramos etiquetas como en la matriz de confusión
+            # Aseguramos a las etiquetas en la matriz de confusión
             y_test_labels = pd.Series(global_y_test).astype(str)
             y_pred_labels = pd.Series(y_pred).astype(str)
             
@@ -450,7 +450,7 @@ def predecir_manual():
         
         print(f"📝 Datos validados: {datos_validados}")
         
-        # 2. Crear DataFrame temporal para procesamiento
+        # 2. Creamos DataFrame temporal para procesamiento
         temp_df = pd.DataFrame([datos_validados])
         
         # 3. Procesamos cada característica manualmente
@@ -476,7 +476,7 @@ def predecir_manual():
         for tt in trans_types:
             X_final[f'Transmission_{tt}'] = [1 if datos_validados['Transmission'] == tt else 0]
         
-        # E. Estandarización (si hay escalador)
+        # E. Estandarizamos (si hay escalador)
         if escalador and isinstance(escalador, dict) and 'means' in escalador:
             for col in ['Year', 'Engine Size', 'Mileage']:
                 if col in escalador['means']:

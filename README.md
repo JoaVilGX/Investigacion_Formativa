@@ -325,8 +325,7 @@ El archivo `devcontainer/devcontainer.json` configura:
 
 ## 👨‍💻 Autores
 
-**Nombre**: Joaquin Villacreses Moreno
-- GitHub: [@JoaVilGX](https://github.com/JoaVilGX)
+**Integrantes**: María Tenelema, Sara Verduga, Joaquin Villacreses, Daniel Zurita, Geraldine Zuñiga y Laura Yasaca.
 
 
 - Proyecto: Investigacion_Formativa / Car Price Condition Predictor

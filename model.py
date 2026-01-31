@@ -7,13 +7,13 @@ def entrenar_y_guardar_modelo_completo(ruta_datos='data/car_price_cleaned.csv',
                                      ruta_modelo='models/modelo_entrenado.pkl',
                                      ruta_scaler='models/scaler.pkl',
                                      ruta_info='models/info_flask.json'):
-    """
-    
-    Entrena un modelo completo desde cero y guarda todo lo necesario.
-    
+   """
+  Entrenamos un modelo completo desde cero y guardamos los elementos
+  necesarios para su uso en la aplicación web.
+
     Returns:
-        Tupla (modelo, scaler, info_dataset)
-    """
+    tuple: modelo entrenado, datos del escalador e información del conjunto de datos
+  """
     print("\n" + "="*60)
     print("🤖 ENTRENANDO MODELO COMPLETO DESDE CERO")
     print("="*60)
@@ -27,16 +27,16 @@ def entrenar_y_guardar_modelo_completo(ruta_datos='data/car_price_cleaned.csv',
         import pandas as pd
         import numpy as np
         
-        # 1. Cargar datos
+        # 1. Cargar datos y  limpiar datos 
         df = cargar_datos(ruta_datos)
         df_clean = limpiar_datos(df)
         
         print(f"📊 Dataset original: {df_clean.shape}")
         
-        # 3. Definir características y variable objetivo
+        # 2. Definir características y variable del objetivo
         target_col = 'Condition'
         
-        # Características exactas para el modelo (las 13 que necesitamos)
+        #3. Definimos las características utilizadas por el modelo (las 13 que necesitamos)
         features_unicas = [
             'Year',
             'Engine Size', 
@@ -85,8 +85,7 @@ def entrenar_y_guardar_modelo_completo(ruta_datos='data/car_price_cleaned.csv',
         condition_map = {'New': 'New', 'Like New': 'Like New', 'Used': 'Used'}
         df_procesado['Condition_encoded'] = df_clean['Condition'].map(condition_map)
         
-        # 4. Verificamos que no existan columnas duplicadas
-        # Comprobamos la integridad de las columnas
+        # 4. Verificamos que no existan columnas duplicadas para asegurar la integridad del dataset
         columnas = df_procesado.columns.tolist()
         if len(columnas) != len(set(columnas)):
             print("❌ ¡HAY COLUMNAS DUPLICADAS!")
@@ -95,7 +94,7 @@ def entrenar_y_guardar_modelo_completo(ruta_datos='data/car_price_cleaned.csv',
             print(f"   Duplicados: {duplicados}")
             return None, None, None
         
-        # 5. Seleccionar solo las 13 características + objetivo
+        # 5. Seleccionamos las 13 características del modelo y la variable objetivo
         X = df_procesado[features_unicas]
         y = df_procesado['Condition_encoded']
         
@@ -103,7 +102,7 @@ def entrenar_y_guardar_modelo_completo(ruta_datos='data/car_price_cleaned.csv',
         print(f"   Características: {list(X.columns)}")
         print(f"   Clases en y: {y.unique().tolist()}")
         
-        # 6. Dividir y entrenar
+        # 6. Dividimos el conjunto de datos en entrenamiento y prueba, y entrenamos el modelo
         X_train, X_test, y_train, y_test = train_test_split(
             X, y, test_size=0.2, random_state=42, stratify=y
         )
@@ -111,16 +110,18 @@ def entrenar_y_guardar_modelo_completo(ruta_datos='data/car_price_cleaned.csv',
         modelo = LogisticRegression(max_iter=10, random_state=42)
         modelo.fit(X_train, y_train)
         
-        # 7. Evaluar
+        # 7. Evaluamos el modelo utilizando el conjunto de prueba
         from sklearn.metrics import accuracy_score
         y_pred = modelo.predict(X_test)
         accuracy = accuracy_score(y_test, y_pred)
         print(f"📈 Accuracy: {accuracy:.4f}")
         
-        # 8. Guardar
+        # 8. Guardamos el modelo entrenado
         joblib.dump(modelo, 'models/modelo_entrenado.pkl')
         
-        # 9. Guardar escalador
+        # 9.  Guardamos la información necesaria para la estandarización de variables
+        # Almacenamos medias, desviaciones estándar y orden de las características
+        # para reproducir el preprocesamiento en producción
         scaler_data = {
             'means': {col: float(df_procesado[col].mean()) for col in ['Year', 'Engine Size', 'Mileage']},
             'stds': {col: float(df_procesado[col].std()) for col in ['Year', 'Engine Size', 'Mileage']},
@@ -128,7 +129,7 @@ def entrenar_y_guardar_modelo_completo(ruta_datos='data/car_price_cleaned.csv',
         }
         joblib.dump(scaler_data, 'models/scaler.pkl')
         
-        # 10. Guardar info
+        # 10.Guardamos información del modelo para su uso en la aplicación Flask
         info_data = {
             'nombre_dataset': 'car_price_cleaned.csv',
             'variable_objetivo': 'Condition',
@@ -181,7 +182,8 @@ def cargar_escalador(ruta='models/scaler.pkl'):
 
 def predecir_con_preprocesamiento(modelo, X, scalers=None, features_requeridas=None):
     """
-    Realiza predicciones asegurando que los datos tengan EXACTAMENTE las características requeridas.
+    Realiza predicciones asegurando que los datos contengan las características
+    requeridas por el modelo entrenado.
     """
     try:
         print(f"📥 Datos recibidos para predicción: {X.shape}")
@@ -192,7 +194,7 @@ def predecir_con_preprocesamiento(modelo, X, scalers=None, features_requeridas=N
             X = X.loc[:, ~X.columns.duplicated()]
             print(f"   Columnas recibidas (sin duplicados): {list(X.columns)}")
         
-        # Determinar las características que el modelo espera
+        # Determinamos las características que el modelo espera
         # Si el modelo tiene feature_names_in_, usarlas (son las usadas en el entrenamiento)
         if hasattr(modelo, 'feature_names_in_'):
             features_esperadas = modelo.feature_names_in_
@@ -205,9 +207,9 @@ def predecir_con_preprocesamiento(modelo, X, scalers=None, features_requeridas=N
             features_esperadas = list(X.columns) if hasattr(X, 'columns') else None
             print(f"   Características esperadas (de los datos): {features_esperadas}")
         
-        # Si tenemos features_esperadas, forzar a que X las tenga en el orden correcto
+           # Si existen características esperadas, aseguramos que X las tenga en el orden correcto
         if features_esperadas is not None:
-            X_prepared = pd.DataFrame()
+            X_prepared = pd.DataFrame()  # Creamos un nuevo DataFrame con las características preparadas para el modelo
             
             # Para cada característica esperada, obtenerla de X o crear con 0
             for feature in features_esperadas:
@@ -217,7 +219,7 @@ def predecir_con_preprocesamiento(modelo, X, scalers=None, features_requeridas=N
                     print(f"⚠️  Característica faltante: {feature} - creando con valor 0")
                     X_prepared[feature] = 0
             
-            # Asegurar el orden correcto (según features_esperadas)
+            # Aseguramos el orden correcto (según features_esperadas)
             X_prepared = X_prepared[features_esperadas]
         else:
             X_prepared = X
@@ -225,7 +227,7 @@ def predecir_con_preprocesamiento(modelo, X, scalers=None, features_requeridas=N
         print(f"📤 Datos preparados para modelo: {X_prepared.shape}")
         print(f"   Columnas finales: {list(X_prepared.columns)}")
         
-        # Aplicar escalado si hay scalers
+        # Aplicamos escalado si hay scalers y aplicamos la estandarización usando las medias y desviaciones guardadas
         if scalers and isinstance(scalers, dict) and 'means' in scalers:
             for col in scalers.get('means', {}):
                 col_std = f'{col}_standardized'
@@ -234,7 +236,7 @@ def predecir_con_preprocesamiento(modelo, X, scalers=None, features_requeridas=N
                     std_val = scalers['stds'][col]
                     X_prepared[col_std] = (X_prepared[col] - mean_val) / (std_val if std_val != 0 else 1)
         
-        # Realizar predicción
+        # Realizamos las predicciones
         predicciones = modelo.predict(X_prepared)
         print(f"✅ Predicciones realizadas: {len(predicciones)}")
         return predicciones
@@ -247,7 +249,7 @@ def predecir_con_preprocesamiento(modelo, X, scalers=None, features_requeridas=N
 
 def predecir(modelo, X, escalador=None):
     """
-    Realiza predicciones con el modelo
+    Realizamos una predicción directa utilizando el modelo entrenado.
     
     Args:
         modelo: modelo entrenado
@@ -264,7 +266,7 @@ def predecir(modelo, X, escalador=None):
         else:
             X_scaled = X
             
-        # Realizar predicción
+        # Realizamos predicciones
         predicciones = modelo.predict(X_scaled)
         return predicciones
         
@@ -335,19 +337,19 @@ def entrenar_modelo(X, y, test_size=0.2, random_state=42):
     from sklearn.linear_model import LogisticRegression
     from sklearn.model_selection import train_test_split
     
-    # Dividir datos
+    # Dividimos los datos
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=test_size, random_state=random_state, stratify=y
     )
     
-    # Entrenar ambos modelos
+    # Entrenamos ambos modelos
     rf_model = RandomForestClassifier(n_estimators=100, random_state=random_state)
     rf_model.fit(X_train, y_train)
     
     lr_model = LogisticRegression(max_iter=1000, random_state=random_state)
     lr_model.fit(X_train, y_train)
     
-    # Evaluar
+    # Evaluamos
     y_pred_rf = rf_model.predict(X_test)
     y_pred_lr = lr_model.predict(X_test)
     

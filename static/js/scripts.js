@@ -21,14 +21,14 @@ async function entrenarModelo() {
     
     const resultados = await respuesta.json();
     
-    // Mostrar accuracy
+    // Se muestra accuracy
     document.getElementById('resultados').innerHTML = `
         <h3>Accuracy: ${resultados.accuracy.toFixed(4)}</h3>
         <div id="grafica-matriz"></div>
         <div id="grafica-dist"></div>
     `;
     
-    // Renderizar gráficas Plotly
+    // Renderización de gráficas Plotly
     const matrizConf = JSON.parse(resultados.matriz_confusion);
     Plotly.newPlot('grafica-matriz', matrizConf.data, matrizConf.layout);
     
@@ -37,10 +37,10 @@ async function entrenarModelo() {
 }
 
 async function predecir() {
-    // Recolectar datos del formulario
+    // Recolectamos datos del formulario
     const datos = {
         feature1: document.getElementById('feature1').value
-        // Añadir más características según tu dataset
+        // Añadimos más características según tu dataset
     };
     
     const respuesta = await fetch('/predecir', {

@@ -14,7 +14,7 @@ function mostrarMensaje(elemento_id, mensaje, tipo = 'info') {
 }
 
 // ============================================================================
-// 1. CONFIGURAR MUESTRA
+// 1. CONFIGURAMOS LA MUESTRA
 // ============================================================================
 
 async function configurar() {
@@ -64,13 +64,13 @@ async function configurar() {
 }
 
 // ============================================================================
-// 2. EVALUAR MODELO
+// 2. EVALUAMOS EL  MODELO
 // ============================================================================
 
 async function evaluar() {
     console.log('📊 Iniciando evaluación...');
     
-    // Limpiar secciones anteriores
+    // Limpiamos secciones anteriores
     document.getElementById('metricas').style.display = 'none';
     document.getElementById('grafica-matriz').style.display = 'none';
     document.getElementById('grafica-dist').style.display = 'none';
@@ -100,7 +100,7 @@ async function evaluar() {
             mostrarMetricas(data.metricas);
         }
         
-        // Mostrar gráficas
+        // Mostramos gráficas
         if (data.matriz_confusion) {
             console.log('📊 Mostrando matriz de confusión...');
             mostrarImagen('grafica-matriz', data.matriz_confusion, 'Matriz de Confusión');
@@ -125,7 +125,7 @@ async function evaluar() {
     }
 }
 
-// Mostrar métricas en tabla
+// Mostramos métricas en tabla
 function mostrarMetricas(metricas) {
     let html = '<h3>📊 Métricas de Evaluación</h3>';
     html += '<table style="border-collapse: collapse; width: 100%;">';
@@ -151,7 +151,7 @@ function mostrarMetricas(metricas) {
     document.getElementById('metricas').style.display = 'block';
 }
 
-// Mostrar imagen en base64
+// Mostramos imagen en base64
 function mostrarImagen(elemento_id, imagen_base64, titulo = '') {
     const elemento = document.getElementById(elemento_id);
     if (elemento) {
@@ -220,7 +220,7 @@ async function generarFormulario() {
     }
 }
 
-// Realizar predicción
+// Realizamos predicción
 async function predecir() {
     const form = document.getElementById('form-prediccion');
     const formData = new FormData(form);
@@ -287,7 +287,7 @@ async function predecir() {
 document.addEventListener('DOMContentLoaded', function() {
     console.log('✅ Página cargada. Inicializando...');
     
-    // Generar formulario de predicción
+    // Generamos formulario de predicción
     generarFormulario();
     
     console.log('✅ Inicialización completada');

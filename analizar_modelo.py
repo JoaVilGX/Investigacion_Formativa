@@ -10,7 +10,7 @@ if hasattr(modelo, 'feature_names_in_'):
     features = list(modelo.feature_names_in_)
     print(f"📊 El modelo tiene {len(features)} características:")
     
-    # Contar ocurrencias
+    # Se cuenta las ocurrencias
     from collections import Counter
     contador = Counter(features)
     
@@ -21,7 +21,7 @@ if hasattr(modelo, 'feature_names_in_'):
         else:
             print(f"  ✅ {feature}: {count} vez")
     
-    # Mostrar orden completo
+    # Mostramos orden completo
     print("\n📋 Orden completo de características:")
     for i, feat in enumerate(features, 1):
         print(f"  {i:2}. {feat}")

@@ -13,7 +13,7 @@ from sklearn.model_selection import train_test_split
 
 sys.path.append('.')
 
-# Importar módulos propios
+# Importamps módulos propios
 try:
     from preprocess import (
         cargar_datos, 
@@ -40,7 +40,7 @@ try:
     print("✅ Todos los módulos importados correctamente")
 except ImportError as e:
     print(f"❌ Error importando módulos: {e}")
-    # Definir placeholders
+    # Definimos placeholders
     cargar_datos = limpiar_datos = transformar_categoricas = estandarizar_numericas = None
     obtener_info_dataset = preparar_datos_para_modelo_sin_duplicados = asegurar_caracteristicas = None
     cargar_modelo = cargar_escalador = predecir_con_preprocesamiento = obtener_metricas = obtener_probabilidades = None
@@ -62,7 +62,7 @@ print("\n" + "="*60)
 print("🚀 INICIALIZANDO SISTEMA DE PREDICCIÓN")
 print("="*60)
 
-# 1. CARGAR CONFIGURACIÓN
+# 1. CARGAMOS LA CONFIGURACIÓN
 try:
     with open('models/info_flask.json', 'r') as f:
         info_dataset = json.load(f)
@@ -84,8 +84,7 @@ except Exception as e:
     }
     features_modelo = []
     target_col = 'Condition'
-
-# 2. CARGAR DATOS PREPROCESADOS
+# 1. CARGAMOS DATOS PREPROCESADOS
 try:
     print("\n🔄 Preparando datos...")
     df_preprocesado, condition_map, brand_mapping, scalers = preparar_datos_para_modelo_sin_duplicados()
@@ -94,7 +93,7 @@ try:
     print(f"   - Filas: {df_preprocesado.shape[0]}")
     print(f"   - Columnas: {df_preprocesado.shape[1]}")
     
-    # Verificar que tenemos Condition_encoded
+    # Verificamos que tenemos Condition_encoded
     if 'Condition_encoded' not in df_preprocesado.columns:
         print("⚠️  Creando Condition_encoded...")
         df_preprocesado['Condition_encoded'] = df_preprocesado[target_col].map(
@@ -105,17 +104,17 @@ except Exception as e:
     print(f"❌ Error preparando datos: {e}")
     df_preprocesado = None
 
-# 3. CARGAR MODELO ENTRENADO
+# 3. CARGAMOS MODELO ENTRENADO
 try:
     modelo = cargar_modelo('models/modelo_entrenado.pkl')
     print("✅ Modelo cargado exitosamente")
     
-    # VERIFICAR QUÉ CLASES TIENE EL MODELO
+    # VERIFICAMOS QUÉ CLASES TIENE EL MODELO
     if hasattr(modelo, 'classes_'):
         print(f"📊 Clases del modelo: {modelo.classes_}")
         print(f"📊 Tipo de clases: {type(modelo.classes_[0])}")
     
-    # VERIFICAR LOS NOMBRES DE CARACTERÍSTICAS QUE EL MODELO ESPERA
+    # VERIFICAMOS LOS NOMBRES DE CARACTERÍSTICAS QUE EL MODELO ESPERA
     if hasattr(modelo, 'feature_names_in_'):
         print(f"🔤 Características esperadas por el modelo: {modelo.feature_names_in_}")
     else:
@@ -126,7 +125,7 @@ except Exception as e:
     print("⚠️  Algunas funciones no estarán disponibles")
     modelo = None
 
-# 4. CARGAR DATOS ORIGINALES PARA GRÁFICAS
+# 4. CARGAMOS DATOS ORIGINALES PARA GRÁFICAS
 try:
     df_original = cargar_datos('data/car_price_cleaned.csv')
     print(f"✅ Datos originales cargados: {df_original.shape}")
@@ -153,7 +152,7 @@ print("="*60 + "\n")
 @app.route('/')
 def index():
     """Página principal con información del dataset"""
-    # Preparar información para mostrar
+    # Preparamos información para mostrar
     if df_preprocesado is not None:
         dataset_info = obtener_info_dataset(df_preprocesado)
         info_display = {
@@ -204,8 +203,8 @@ def configurar():
         
         print(f"📊 Muestra seleccionada: {len(df_muestra)} filas")
         
-        # 2. Separar características y variable objetivo
-        # Determinar el orden de características que el modelo espera
+        # 2. Separamos características y variable objetivo
+        # Determinamos el orden de características que el modelo espera
         if modelo is not None and hasattr(modelo, 'feature_names_in_'):
             features_ordenadas = list(modelo.feature_names_in_)
         else:
@@ -214,7 +213,7 @@ def configurar():
         X = df_muestra[features_ordenadas]
         y = df_muestra['Condition_encoded']
         
-        # 3. Dividir en entrenamiento y prueba
+        # 3. Dividimos en entrenamiento y prueba
         X_train, X_test, y_train, y_test = train_test_split(
             X, y, 
             test_size=1-split, 
@@ -222,7 +221,7 @@ def configurar():
             stratify=y
         )
         
-        # Guardar en variables globales
+        # Guardamos en variables globales
         global_X_train = X_train
         global_X_test = X_test
         global_y_train = y_train
@@ -266,7 +265,7 @@ def evaluar():
         }), 400
     
     try:
-        # 1. REALIZAR PREDICCIONES
+        # 1. REALIZAMOS PREDICCIONES
         print("🤖 Realizando predicciones...")
         y_pred = predecir_con_preprocesamiento(
             modelo, 
@@ -283,7 +282,7 @@ def evaluar():
         
         print(f"✅ {len(y_pred)} predicciones realizadas")
         
-        # 2. CALCULAR MÉTRICAS
+        # 2. SE CALCULAR LAS MÉTRICAS
         print("📈 Calculando métricas...")
         metricas = obtener_metricas(global_y_test, y_pred)
         
@@ -295,15 +294,15 @@ def evaluar():
         
         print(f"✅ Métricas calculadas (Accuracy: {metricas['accuracy']:.4f})")
         
-        # 3. GENERAR MATRIZ DE CONFUSIÓN
+        # 3. SE GENERA MATRIZ DE CONFUSIÓN
         print("📊 Generando matriz de confusión...")
         matriz_conf = None
         try:
-            # Asegurar que las etiquetas sean strings
+            # Aseguramos que las etiquetas sean strings
             y_test_labels = pd.Series(global_y_test).astype(str)
             y_pred_labels = pd.Series(y_pred).astype(str)
             
-            # Filtrar solo las etiquetas válidas
+            # Filtramos solo las etiquetas válidas
             etiquetas_validas = ['Used', 'Like New', 'New', '0', '1', '2']
             mask = y_test_labels.isin(etiquetas_validas) & y_pred_labels.isin(etiquetas_validas)
             
@@ -311,7 +310,7 @@ def evaluar():
                 y_test_filtrado = y_test_labels[mask]
                 y_pred_filtrado = y_pred_labels[mask]
                 
-                # Si son números, convertirlos a strings legibles
+                # Si son números, convertimos a strings legibles
                 if set(y_test_filtrado.unique()).issubset({'0', '1', '2'}):
                     mapping = {'0': 'Used', '1': 'Like New', '2': 'New'}
                     y_test_filtrado = y_test_filtrado.map(mapping)
@@ -331,7 +330,7 @@ def evaluar():
             import traceback
             traceback.print_exc()
         
-        # 4. GRÁFICA DE DISTRIBUCIÓN
+        # 4. GRAFICAMOS LA DISTRIBUCIÓN
         print("📈 Generando gráfica de distribución...")
         grafica_dist = None
         try:
@@ -346,11 +345,11 @@ def evaluar():
         except Exception as e:
             print(f"⚠️  Error generando gráfica de distribución: {e}")
         
-        # 5. GRÁFICA DE RENDIMIENTO POR CLASE
+        # 5. GRAFICAMOS EL RENDIMIENTO POR CLASE
         print("📊 Generando gráfica de rendimiento por clase...")
         grafica_rendimiento = None
         try:
-            # Asegurar etiquetas como en la matriz de confusión
+            # Aseguramos etiquetas como en la matriz de confusión
             y_test_labels = pd.Series(global_y_test).astype(str)
             y_pred_labels = pd.Series(y_pred).astype(str)
             
@@ -398,7 +397,7 @@ def evaluar():
 def test_image():
     """Endpoint de prueba para verificar que las imágenes se generan correctamente"""
     try:
-        # Crear una imagen simple de prueba
+        # Creamos una imagen simple de prueba
         import plotly.graph_objects as go
         import plotly.io as pio
         import base64
@@ -409,7 +408,7 @@ def test_image():
         img_bytes = pio.to_image(fig, format='png', width=400, height=300)
         img_base64 = base64.b64encode(img_bytes).decode('utf-8')
         
-        # Devolver como HTML para probar
+        # Devolvemos como HTML para probar
         html = f"""
         <html>
         <body>
@@ -439,7 +438,7 @@ def predecir_manual():
     try:
         print(f"🔍 Realizando predicción manual...")
         
-        # 1. Validar y convertir datos
+        # 1. Validamos y convertimos datos
         datos_validados = {
             'Year': float(datos.get('Year', 2020)),
             'Engine Size': float(datos.get('Engine Size', 2.0)),
@@ -454,7 +453,7 @@ def predecir_manual():
         # 2. Crear DataFrame temporal para procesamiento
         temp_df = pd.DataFrame([datos_validados])
         
-        # 3. Procesar cada característica manualmente
+        # 3. Procesamos cada característica manualmente
         X_final = pd.DataFrame()
         
         # A. Variables numéricas básicas
@@ -467,7 +466,7 @@ def predecir_manual():
         brand_value = 1  # Valor por defecto
         X_final['Brand_encoded'] = [brand_value]
         
-        # C. Fuel Type (one-hot) - asegurar que solo una sea 1
+        # C. Fuel Type (one-hot) - aseguramos que solo una sea 1
         fuel_types = ['Diesel', 'Electric', 'Hybrid', 'Petrol']
         for ft in fuel_types:
             X_final[f'Fuel_Type_{ft}'] = [1 if datos_validados['Fuel Type'] == ft else 0]
@@ -491,25 +490,25 @@ def predecir_manual():
                 else:
                     X_final[f'{col}_standardized'] = [0.0]
         else:
-            # Sin escalador, usar 0
+            # Sin escalador, usamos 0
             for col in ['Year', 'Engine Size', 'Mileage']:
                 X_final[f'{col}_standardized'] = [0.0]
         
-        # 4. VERIFICAR que tenemos todas las características en el orden CORRECTO
-        # Asegurar que X_final tenga TODAS las características que el modelo espera
+        # 4. Verificamos que tenemos todas las características en el orden CORRECTO
+        # Aseguramos que X_final tenga TODAS las características que el modelo espera
         for feature in features_modelo:
             if feature not in X_final.columns:
                 print(f"⚠️  Característica faltante '{feature}', agregando con valor 0")
                 X_final[feature] = 0.0  # Usar 0.0 en lugar de NaN
         
-        # Reordenar columnas en el orden EXACTO que el modelo espera
+        # Reordenamos columnas en el orden EXACTO que el modelo espera
         X_final = X_final[features_modelo]
         
-        # 5. VERIFICAR que no hay NaN
+        # 5. Verificamos que no hay NaN
         if X_final.isnull().any().any():
             print(f"❌ ¡HAY VALORES NaN EN LOS DATOS!")
             print(f"   Columnas con NaN: {X_final.columns[X_final.isnull().any()].tolist()}")
-            # Rellenar NaN con 0
+            # Rellenamos NaN con 0
             X_final = X_final.fillna(0.0)
         
         print(f"📤 Datos finales para modelo: {X_final.shape}")
@@ -517,16 +516,16 @@ def predecir_manual():
         for i, col in enumerate(X_final.columns[:5]):
             print(f"     {col}: {X_final[col].iloc[0]}")
         
-        # 6. Predecir
+        # 6. Predecimos
         prediccion = modelo.predict(X_final)
         etiqueta = prediccion[0]
         
-        # 7. Obtener probabilidades
+        # 7. Obtenemos probabilidades
         if hasattr(modelo, 'predict_proba'):
             probabilidades = modelo.predict_proba(X_final)[0]
             confianza = float(max(probabilidades))
             
-            # Crear diccionario de probabilidades
+            # Creamos diccionario de probabilidades
             prob_dict = {}
             for i, clase in enumerate(modelo.classes_):
                 prob_dict[clase] = round(float(probabilidades[i]), 3)
@@ -656,7 +655,7 @@ if __name__ == '__main__':
     print("  POST /predecir_manual - Realizar predicción manual")
     print("="*60 + "\n")
     
-    # Obtener puerto de Codespaces o usar 5000 por defecto
+    # Obtenemos puerto de Codespaces o usar 5000 por defecto
     port = int(os.environ.get("PORT", 5000))
     host = "0.0.0.0"
     

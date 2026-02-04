@@ -107,7 +107,7 @@ def entrenar_y_guardar_modelo_completo(ruta_datos='data/car_price_cleaned.csv',
             X, y, test_size=0.2, random_state=42, stratify=y
         )
         
-        modelo = LogisticRegression(max_iter=10, random_state=42)
+        modelo = LogisticRegression(max_iter=10000, random_state=42)
         modelo.fit(X_train, y_train)
         
         # 7. Evaluamos el modelo utilizando el conjunto de prueba

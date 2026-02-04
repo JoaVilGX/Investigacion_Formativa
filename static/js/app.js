@@ -75,6 +75,7 @@ async function evaluar() {
     document.getElementById('grafica-matriz').style.display = 'none';
     document.getElementById('grafica-dist').style.display = 'none';
     document.getElementById('grafica-imp').style.display = 'none';
+    document.getElementById('grafica-rend').style.display = 'none';
     
     mostrarMensaje('metricas', '⏳ Evaluando modelo y generando gráficas...', 'info');
     document.getElementById('metricas').style.display = 'block';
@@ -105,12 +106,17 @@ async function evaluar() {
             console.log('📊 Mostrando matriz de confusión...');
             mostrarImagen('grafica-matriz', data.matriz_confusion, 'Matriz de Confusión');
         }
-        
+
         if (data.grafica_distribucion) {
             console.log('📈 Mostrando gráfica de distribución...');
             mostrarImagen('grafica-dist', data.grafica_distribucion, 'Distribución de Variables');
         }
-        
+
+        if (data.grafica_rendimiento) {
+            console.log('📊 Mostrando gráfica de rendimiento...');
+            mostrarImagen('grafica-rend', data.grafica_rendimiento, 'Rendimiento por Clase');
+        }
+
         if (data.grafica_importancia) {
             console.log('🎯 Mostrando gráfica de importancia...');
             mostrarImagen('grafica-imp', data.grafica_importancia, 'Importancia de Características');
@@ -151,25 +157,87 @@ function mostrarMetricas(metricas) {
     document.getElementById('metricas').style.display = 'block';
 }
 
+<<<<<<< HEAD
 // Mostramos imagen en base64
+=======
+// Función para mostrar imágenes base64
+>>>>>>> 8fb53af (Reescritura para visualización correcta de gráficas con Matplotlib)
 function mostrarImagen(elemento_id, imagen_base64, titulo = '') {
     const elemento = document.getElementById(elemento_id);
     if (elemento) {
         console.log(`🖼️ ${titulo}: Longitud de base64: ${imagen_base64 ? imagen_base64.length : 0}`);
         
-        if (imagen_base64 && imagen_base64.length > 100) {
+        if (imagen_base64 && imagen_base64.startsWith('data:image/')) {
             elemento.innerHTML = `
                 <h4>${titulo}</h4>
                 <img src="${imagen_base64}" style="max-width: 100%; height: auto; border: 1px solid #ddd; padding: 10px; border-radius: 4px;">
-                <p><small>Imagen cargada (${imagen_base64.length} caracteres)</small></p>
+            `;
+        } else if (imagen_base64 && imagen_base64.length > 100) {
+            // Si no tiene el prefijo, agregarlo
+            elemento.innerHTML = `
+                <h4>${titulo}</h4>
+                <img src="data:image/png;base64,${imagen_base64}" style="max-width: 100%; height: auto; border: 1px solid #ddd; padding: 10px; border-radius: 4px;">
             `;
         } else {
             elemento.innerHTML = `
                 <h4>${titulo}</h4>
-                <p style="color: red;">No se pudo cargar la gráfica. Base64 inválido o muy corto.</p>
+                <p style="color: red;">No se pudo cargar la gráfica.</p>
             `;
         }
         elemento.style.display = 'block';
+    }
+}
+
+// Luego, en la función evaluar, cambia las llamadas:
+async function evaluar() {
+    console.log('📊 Iniciando evaluación...');
+    
+    // Limpiar secciones anteriores
+    document.getElementById('metricas').style.display = 'none';
+    document.getElementById('grafica-matriz').style.display = 'none';
+    document.getElementById('grafica-dist').style.display = 'none';
+    document.getElementById('grafica-rend').style.display = 'none';
+    
+    mostrarMensaje('metricas', '⏳ Evaluando modelo y generando gráficas...', 'info');
+    document.getElementById('metricas').style.display = 'block';
+    
+    try {
+        const response = await fetch(`${API_BASE}/evaluar`, {
+            method: 'GET',
+            headers: {'Content-Type': 'application/json'}
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok) throw new Error(data.error || 'Error en evaluación');
+        
+        console.log('✅ Datos de evaluación recibidos');
+        
+        // Mostrar métricas
+        if (data.metricas) mostrarMetricas(data.metricas);
+        
+        // Mostrar gráficas
+        if (data.matriz_confusion) {
+            console.log('📊 Mostrando matriz de confusión...');
+            mostrarImagen('grafica-matriz', data.matriz_confusion, 'Matriz de Confusión');
+        }
+        
+        if (data.grafica_distribucion) {
+            console.log('📈 Mostrando gráfica de distribución...');
+            mostrarImagen('grafica-dist', data.grafica_distribucion, 'Distribución de Variables');
+        }
+        
+        if (data.grafica_rendimiento) {
+            console.log('📊 Mostrando gráfica de rendimiento...');
+            mostrarImagen('grafica-rend', data.grafica_rendimiento, 'Rendimiento por Clase');
+        }
+        
+        console.log('✅ Evaluación completada');
+        
+    } catch (error) {
+        console.error('❌ Error:', error);
+        mostrarMensaje('metricas', `❌ ${error.message}`, 'error');
+        document.getElementById('metricas').style.display = 'block';
     }
 }
 

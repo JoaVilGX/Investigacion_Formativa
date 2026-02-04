@@ -294,43 +294,108 @@ def evaluar():
         
         print(f"✅ Métricas calculadas (Accuracy: {metricas['accuracy']:.4f})")
         
-        # 3. SE GENERA MATRIZ DE CONFUSIÓN
+        print("🔍 DIAGNÓSTICO DE ETIQUETAS:")
+        print(f"Tipo de global_y_test: {type(global_y_test)}")
+        print(f"Tipo de y_pred: {type(y_pred)}")
+
+        if hasattr(global_y_test, '__len__'):
+            print(f"Primeros 10 valores de global_y_test: {list(global_y_test[:10])}")
+        if hasattr(y_pred, '__len__'):
+            print(f"Primeros 10 valores de y_pred: {list(y_pred[:10])}")
+
+        # Contar valores únicos
+        unique_y_test = set(str(x) for x in global_y_test)
+        unique_y_pred = set(str(x) for x in y_pred)
+        print(f"Valores únicos en global_y_test (como strings): {unique_y_test}")
+        print(f"Valores únicos en y_pred (como strings): {unique_y_pred}")
+
+        # Ver cuáles NO están en etiquetas_validas
+        etiquetas_validas_set = set(['Used', 'Like New', 'New', '0', '1', '2'])
+        invalid_y_test = [x for x in unique_y_test if str(x) not in etiquetas_validas_set]
+        invalid_y_pred = [x for x in unique_y_pred if str(x) not in etiquetas_validas_set]
+
+        print(f"Valores NO VÁLIDOS en global_y_test: {invalid_y_test}")
+        print(f"Valores NO VÁLIDOS en y_pred: {invalid_y_pred}")
+        
+        # 3. GENERAR MATRIZ DE CONFUSIÓN
         print("📊 Generando matriz de confusión...")
         matriz_conf = None
         try:
-            # Aseguramos que las etiquetas sean strings
-            y_test_labels = pd.Series(global_y_test).astype(str)
-            y_pred_labels = pd.Series(y_pred).astype(str)
+            # Convertir a Series de pandas para facilitar manipulación
+            y_test_series = pd.Series(global_y_test)
+            y_pred_series = pd.Series(y_pred)
             
-            # Filtramos solo las etiquetas válidas
-            etiquetas_validas = ['Used', 'Like New', 'New', '0', '1', '2']
-            mask = y_test_labels.isin(etiquetas_validas) & y_pred_labels.isin(etiquetas_validas)
+            print(f"📊 Datos para matriz de confusión:")
+            print(f"   y_test shape: {y_test_series.shape}")
+            print(f"   y_pred shape: {y_pred_series.shape}")
+            print(f"   Valores únicos en y_test: {y_test_series.unique()}")
+            print(f"   Valores únicos en y_pred: {y_pred_series.unique()}")
             
-            if mask.any():
-                y_test_filtrado = y_test_labels[mask]
-                y_pred_filtrado = y_pred_labels[mask]
+            # PRIMERO: Normalizar todos los valores a strings consistentes
+            def normalizar_etiquetas(series):
+                # Convertir a string
+                series_str = series.astype(str)
                 
-                # Si son números, convertimos a strings legibles
-                if set(y_test_filtrado.unique()).issubset({'0', '1', '2'}):
-                    mapping = {'0': 'Used', '1': 'Like New', '2': 'New'}
-                    y_test_filtrado = y_test_filtrado.map(mapping)
-                    y_pred_filtrado = y_pred_filtrado.map(mapping)
+                # Remover espacios extra, puntos decimales, etc.
+                series_str = series_str.str.strip()
                 
-                matriz_conf = crear_matriz_confusion(
-                    y_test_filtrado, 
-                    y_pred_filtrado,
-                    labels=['Used', 'Like New', 'New']
+                # Mapear variantes comunes
+                mapeo = {
+                    '0': 'Used',
+                    '1': 'Like New', 
+                    '2': 'New',
+                    '0.0': 'Used',
+                    '1.0': 'Like New',
+                    '2.0': 'New',
+                    'used': 'Used',
+                    'like new': 'Like New',
+                    'new': 'New',
+                    'Like_New': 'Like New',
+                    'Like-New': 'Like New'
+                }
+                
+                # Aplicar mapeo
+                series_normalizado = series_str.replace(mapeo)
+                
+                # Solo mantener las 3 categorías principales
+                categorias_validas = ['Used', 'Like New', 'New']
+                series_normalizado = series_normalizado.where(
+                    series_normalizado.isin(categorias_validas), 
+                    'Used'  # Valor por defecto si no es válido
                 )
-                print(f"✅ Matriz de confusión generada con {len(y_test_filtrado)} muestras")
-            else:
-                print("⚠️  No hay muestras válidas para la matriz de confusión")
                 
+                return series_normalizado
+            
+            y_test_norm = normalizar_etiquetas(y_test_series)
+            y_pred_norm = normalizar_etiquetas(y_pred_series)
+            
+            print(f"✅ Etiquetas normalizadas:")
+            print(f"   y_test_norm únicas: {y_test_norm.unique()}")
+            print(f"   y_pred_norm únicas: {y_pred_norm.unique()}")
+            print(f"   Conteo: {len(y_test_norm)} muestras (deberían ser {len(global_y_test)})")
+            
+            # Verificar que tenemos todas las muestras
+            perdidas = len(y_test_series) - len(y_test_norm)
+            if perdidas > 0:
+                print(f"⚠️  Se perdieron {perdidas} muestras en la normalización")
+            
+            # Crear matriz de confusión con TODAS las muestras
+            matriz_conf = crear_matriz_confusion(
+                y_test_norm, 
+                y_pred_norm,
+                labels=['Used', 'Like New', 'New']
+            )
+            
+            print(f"✅ Matriz de confusión generada con {len(y_test_norm)} muestras")
+            
         except Exception as e:
             print(f"⚠️  Error generando matriz de confusión: {e}")
             import traceback
             traceback.print_exc()
         
-        # 4. GRAFICACIÓN DE LA DISTRIBUCIÓN
+        print(f"📊 Matriz de confusión generada: {type(matriz_conf)}, longitud: {len(matriz_conf) if matriz_conf else 0}")
+                
+        # 4. GRÁFICA DE DISTRIBUCIÓN
         print("📈 Generando gráfica de distribución...")
         grafica_dist = None
         try:
@@ -345,30 +410,37 @@ def evaluar():
         except Exception as e:
             print(f"⚠️  Error generando gráfica de distribución: {e}")
         
-        # 5. GRAFICAMOS EL RENDIMIENTO POR CLASE
+        print(f"📈 Gráfica distribución generada: {type(grafica_dist)}, longitud: {len(grafica_dist) if grafica_dist else 0}")
+        
+        # 5. GRÁFICA DE RENDIMIENTO POR CLASE
         print("📊 Generando gráfica de rendimiento por clase...")
         grafica_rendimiento = None
         try:
-            # Aseguramos a las etiquetas en la matriz de confusión
-            y_test_labels = pd.Series(global_y_test).astype(str)
-            y_pred_labels = pd.Series(y_pred).astype(str)
+            # Usar las versiones normalizadas
+            y_test_labels = y_test_norm if 'y_test_norm' in locals() else pd.Series(global_y_test).astype(str)
+            y_pred_labels = y_pred_norm if 'y_pred_norm' in locals() else pd.Series(y_pred).astype(str)
             
-            if set(y_test_labels.unique()).issubset({'0', '1', '2'}):
-                mapping = {'0': 'Used', '1': 'Like New', '2': 'New'}
-                y_test_labels = y_test_labels.map(mapping)
-                y_pred_labels = y_pred_labels.map(mapping)
+            print(f"📊 Datos para gráfica de rendimiento:")
+            print(f"   Muestras: {len(y_test_labels)}")
+            print(f"   Distribución y_test: {y_test_labels.value_counts().to_dict()}")
+            print(f"   Distribución y_pred: {y_pred_labels.value_counts().to_dict()}")
             
             grafica_rendimiento = crear_grafica_rendimiento_por_clase(
-                y_test_labels, 
-                y_pred_labels,
+                y_test_labels.tolist(), 
+                y_pred_labels.tolist(),
                 labels=['Used', 'Like New', 'New']
             )
-            print("✅ Gráfica de rendimiento por clase generada")
+            
+            if grafica_rendimiento:
+                print("✅ Gráfica de rendimiento por clase generada")
+            else:
+                print("⚠️  No se pudo generar gráfica de rendimiento")
+                
         except Exception as e:
             print(f"⚠️  Error generando gráfica de rendimiento por clase: {e}")
         
         print("✅ Evaluación completada exitosamente")
-        
+
         return jsonify({
             'success': True,
             'metricas': metricas,

@@ -157,11 +157,7 @@ function mostrarMetricas(metricas) {
     document.getElementById('metricas').style.display = 'block';
 }
 
-<<<<<<< HEAD
-// Mostramos imagen en base64
-=======
 // Función para mostrar imágenes base64
->>>>>>> 8fb53af (Reescritura para visualización correcta de gráficas con Matplotlib)
 function mostrarImagen(elemento_id, imagen_base64, titulo = '') {
     const elemento = document.getElementById(elemento_id);
     if (elemento) {

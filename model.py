@@ -7,13 +7,13 @@ def entrenar_y_guardar_modelo_completo(ruta_datos='data/car_price_cleaned.csv',
                                      ruta_modelo='models/modelo_entrenado.pkl',
                                      ruta_scaler='models/scaler.pkl',
                                      ruta_info='models/info_flask.json'):
-   """
-  Entrenamos un modelo completo desde cero y guardamos los elementos
-  necesarios para su uso en la aplicación web.
+    """
+    Entrenamos un modelo completo desde cero y guardamos los elementos
+    necesarios para su uso en la aplicación web.
 
-    Returns:
-    tuple: modelo entrenado, datos del escalador e información del conjunto de datos
-  """
+        Returns:
+        tuple: modelo entrenado, datos del escalador e información del conjunto de datos
+    """
     print("\n" + "="*60)
     print("🤖 ENTRENANDO MODELO COMPLETO DESDE CERO")
     print("="*60)
